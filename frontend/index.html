@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AetherMind – Notes to Tasks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eceef8;
+    --surface: #ffffff;
+    --ink: #1c2145;
+    --muted: #5e6490;
+    --line: #d6d9ee;
+    --accent: #4338ca;
+    --accent-soft: #e4e2fb;
+    --ok: #047857;  --ok-soft: #d6f3e8;
+    --warn: #b45309; --warn-soft: #fdefd6;
+    --bad: #b42318; --bad-soft: #fde5e2;
+    --head: "Outfit", "Segoe UI", system-ui, sans-serif;
+    --body: "Nunito Sans", "Segoe UI", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12142b; --surface: #1c1f3f; --ink: #e8eaff; --muted: #9ca2d6; --line: #2f3466;
+      --accent: #a5a0ff; --accent-soft: #2b2c63;
+      --ok: #5fd6a6; --ok-soft: #12382d; --warn: #f2b866; --warn-soft: #3f2f12; --bad: #ff9489; --bad-soft: #4a1f1b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.5 var(--body); }
+  main { max-width: 900px; margin: 0 auto; padding: 32px 18px 64px; }
+  h1 { font: 700 2.3rem/1.1 var(--head); margin: 0 0 6px; }
+  h2 { font: 700 1.2rem var(--head); margin: 0 0 12px; }
+  .sub { color: var(--muted); margin: 0 0 26px; max-width: 58ch; }
+  section { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+  textarea { width: 100%; min-height: 90px; resize: vertical; padding: 12px; font: inherit; color: var(--ink);
+             background: var(--bg); border: 1px solid var(--line); border-radius: 8px; }
+  textarea:focus, input:focus, select:focus, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+  button { font: 600 1rem var(--body); padding: 10px 18px; border-radius: 8px; border: 1px solid var(--line);
+           background: var(--surface); color: var(--ink); cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  @media (prefers-color-scheme: dark) { button.primary { color: #14123a; } }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .chip { font-weight: 400; font-size: .9rem; padding: 5px 12px; border-radius: 999px; color: var(--muted); }
+  .hint { color: var(--muted); font-size: .9rem; }
+
+  .banner { padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-weight: 600; }
+  .banner.ok { background: var(--ok-soft); color: var(--ok); }
+  .banner.warn { background: var(--warn-soft); color: var(--warn); }
+  .banner.err { background: var(--bad-soft); color: var(--bad); }
+  ul.problems { margin: 0 0 14px; padding-left: 20px; color: var(--warn); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+  .grid .wide { grid-column: 1 / -1; }
+  label { display: block; font-size: .9rem; color: var(--muted); margin-bottom: 4px; }
+  input, select { width: 100%; padding: 9px 10px; font: inherit; color: var(--ink); background: var(--bg);
+                  border: 1px solid var(--line); border-radius: 8px; }
+  .missing input, .missing select { border-color: var(--warn); background: var(--warn-soft); }
+  .missing label { color: var(--warn); font-weight: 600; }
+  .defaulted label::after { content: " (default, change if needed)"; font-weight: 400; }
+
+  .toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+  .tabs button { padding: 6px 14px; border-radius: 999px; font-size: .9rem; }
+  .tabs button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  ul.tasks { list-style: none; margin: 0; padding: 0; }
+  li.task { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  li.task.fresh { background: var(--accent-soft); margin: 0 -12px; padding: 12px; border-radius: 8px; }
+  .t-title { font-weight: 600; }
+  li.done .t-title { text-decoration: line-through; color: var(--muted); }
+  .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; font-size: .88rem; color: var(--muted); }
+  .pill { padding: 1px 10px; border-radius: 999px; border: 1px solid var(--line); }
+  .pill.High { background: var(--bad-soft); color: var(--bad); border-color: transparent; }
+  .pill.Medium { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+  .pill.Low { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+  .pill.overdue { background: var(--bad-soft); color: var(--bad); border-color: transparent; }
+  .actions { display: flex; gap: 6px; }
+  .actions button { padding: 5px 12px; font-size: .88rem; }
+  .actions .del { color: var(--bad); }
+  .empty { color: var(--muted); padding: 12px 0; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>AetherMind</h1>
+  <p class="sub">Say or type what you need to do. The AI turns it into a task with a deadline and priority, you check it, and it joins your list.</p>
+
+  <!-- 1. INPUT -->
+  <section aria-labelledby="in-h">
+    <h2 id="in-h">New note</h2>
+    <label for="note">What do you need to do?</label>
+    <textarea id="note" maxlength="500" placeholder="e.g. Submit the DBMS assignment by Friday, it's urgent"></textarea>
+    <div class="row">
+      <button class="primary" id="extractBtn">Create task from note</button>
+      <button id="micBtn" type="button" aria-label="Speak your note">🎤 Speak</button>
+      <span class="hint" id="status" role="status"></span>
+    </div>
+    <div class="chips" aria-label="Try an example">
+      <button class="chip" data-ex="Submit the DBMS assignment by Friday, it's urgent">Valid example</button>
+      <button class="chip" data-ex="Remind me to call the dentist">Missing deadline</button>
+      <button class="chip" data-ex="Tell me a joke">Not a task</button>
+    </div>
+  </section>
+
+  <!-- 2. PREVIEW + VALIDATION + CONFIRM -->
+  <section id="preview" aria-labelledby="pv-h" hidden>
+    <h2 id="pv-h">Check before saving</h2>
+    <div id="vBanner" class="banner"></div>
+    <ul class="problems" id="problems" hidden></ul>
+    <div class="grid">
+      <div class="wide" id="f-title"><label for="title">Task *</label><input id="title" maxlength="150"></div>
+      <div id="f-due_date"><label for="due_date">Due date *</label><input id="due_date" type="date"></div>
+      <div id="f-priority"><label for="priority">Priority</label>
+        <select id="priority"></select></div>
+      <div id="f-category"><label for="category">Category</label>
+        <select id="category"></select></div>
+      <div class="wide" id="f-description"><label for="description">Details</label><input id="description" maxlength="300"></div>
+    </div>
+    <div class="row">
+      <button class="primary" id="confirmBtn">Confirm and save task</button>
+      <button id="cancelBtn">Discard</button>
+    </div>
+  </section>
+
+  <!-- 3. TASK LIST -->
+  <section aria-labelledby="tl-h">
+    <h2 id="tl-h">Your tasks</h2>
+    <div id="saveBanner" class="banner ok" hidden></div>
+    <div class="toolbar">
+      <span class="hint" id="count"></span>
+      <div class="tabs" role="group" aria-label="Filter tasks">
+        <button data-f="All" aria-pressed="true">All</button>
+        <button data-f="Pending" aria-pressed="false">Pending</button>
+        <button data-f="Done" aria-pressed="false">Done</button>
+      </div>
+    </div>
+    <ul class="tasks" id="list"></ul>
+    <div class="empty" id="empty" hidden>No tasks yet. Write a note above to add your first one.</div>
+  </section>
+</main>
+
+<script>
+/* ===== CONFIG: set this to your deployed backend URL (no trailing slash) ===== */
+const API_URL = "http://localhost:8000";
+const PRIORITIES = ["High", "Medium", "Low"];
+const CATEGORIES = ["Study", "Work", "Personal", "Health", "Other"];
+
+const $ = id => document.getElementById(id);
+const fields = ["title", "due_date", "priority", "category", "description"];
+let rawInput = "", allTasks = [], filter = "All", freshId = null;
+
+PRIORITIES.forEach(p => $("priority").add(new Option(p, p)));
+CATEGORIES.forEach(c => $("category").add(new Option(c, c)));
+$("due_date").min = new Date().toISOString().slice(0, 10);
+
+const setStatus = m => { $("status").textContent = m; };
+
+async function api(path, options) {
+  let res;
+  try { res = await fetch(API_URL + path, { headers: { "Content-Type": "application/json" }, ...options }); }
+  catch { throw new Error("Cannot reach the server. Check your connection and try again."); }
+  if (res.status === 204) return null;
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    let msg = body.detail;
+    if (Array.isArray(msg)) msg = msg.map(e => `${(e.loc || []).slice(-1)[0]}: ${e.msg}`).join("; ");
+    throw new Error(msg || `Request failed (${res.status}).`);
+  }
+  return body;
+}
+
+/* ---------- Step 1: extract ---------- */
+$("extractBtn").onclick = async () => {
+  const text = $("note").value.trim();
+  if (!text) { setStatus("Type or speak a note first."); return; }
+  $("extractBtn").disabled = true; setStatus("Reading your note…"); $("saveBanner").hidden = true;
+  try {
+    const r = await api("/extract", { method: "POST", body: JSON.stringify({ text }) });
+    rawInput = r.raw_input;
+    showPreview(r);
+    setStatus("");
+  } catch (e) { setStatus(""); showError(e.message); }
+  finally { $("extractBtn").disabled = false; }
+};
+
+function showPreview(r) {
+  $("preview").hidden = false;
+  $("title").value = r.data.title ?? "";
+  $("due_date").value = r.data.due_date ?? "";
+  $("priority").value = r.data.priority ?? "Medium";
+  $("category").value = r.data.category ?? "Other";
+  $("description").value = r.data.description ?? "";
+  fields.forEach(f => $("f-" + f).classList.remove("missing", "defaulted"));
+  r.missing_fields.forEach(f => $("f-" + f).classList.add("missing"));
+  (r.defaults_used || []).forEach(f => $("f-" + f).classList.add("defaulted"));
+
+  const b = $("vBanner");
+  if (r.status === "valid") { b.className = "banner ok"; b.textContent = "✓ Task and due date found. Review and confirm."; }
+  else { b.className = "banner warn"; b.textContent = "⚠ Something is missing. Fill in the highlighted fields to continue."; }
+
+  const p = $("problems"); p.innerHTML = "";
+  const msgs = [...r.errors, ...r.missing_fields.map(f => `Missing: ${f === "due_date" ? "due date" : f}`)];
+  msgs.forEach(m => { const li = document.createElement("li"); li.textContent = m; p.appendChild(li); });
+  p.hidden = msgs.length === 0;
+  $("preview").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function showError(msg) {
+  $("preview").hidden = false;
+  fields.forEach(f => { $("f-" + f).classList.remove("missing", "defaulted"); });
+  $("title").value = ""; $("due_date").value = ""; $("description").value = "";
+  $("vBanner").className = "banner err"; $("vBanner").textContent = "✕ " + msg;
+  $("problems").hidden = true;
+}
+
+/* ---------- Step 2: confirm -> CREATE in DB ---------- */
+$("confirmBtn").onclick = async () => {
+  const payload = {
+    title: $("title").value.trim(),
+    due_date: $("due_date").value,
+    priority: $("priority").value,
+    category: $("category").value,
+    description: $("description").value.trim() || null,
+    raw_input: rawInput || null,
+  };
+  const missing = [];
+  if (payload.title.length < 2) missing.push("title");
+  if (!payload.due_date) missing.push("due_date");
+  if (missing.length) {
+    ["title", "due_date"].forEach(f => $("f-" + f).classList.toggle("missing", missing.includes(f)));
+    $("vBanner").className = "banner warn";
+    $("vBanner").textContent = "⚠ Cannot save yet. Please fill: " + missing.map(m => m === "due_date" ? "due date" : m).join(", ") + ".";
+    return;
+  }
+  $("confirmBtn").disabled = true;
+  try {
+    const saved = await api("/tasks", { method: "POST", body: JSON.stringify(payload) });
+    $("preview").hidden = true; $("note").value = "";
+    const sb = $("saveBanner"); sb.className = "banner ok";
+    sb.textContent = `✓ Saved to database as task #${saved.id}: "${saved.title}", due ${saved.due_date}, ${saved.priority} priority`;
+    sb.hidden = false;
+    freshId = saved.id;
+    await loadTasks();
+  } catch (e) {
+    $("vBanner").className = "banner err"; $("vBanner").textContent = "✕ Not saved: " + e.message;
+  } finally { $("confirmBtn").disabled = false; }
+};
+$("cancelBtn").onclick = () => { $("preview").hidden = true; };
+
+/* ---------- Task list (READ + UPDATE + DELETE) ---------- */
+async function loadTasks() {
+  try { allTasks = await api("/tasks"); render(); }
+  catch (e) { $("list").innerHTML = ""; $("empty").hidden = false; $("empty").textContent = "Could not load tasks: " + e.message; }
+}
+
+function render() {
+  const list = $("list"); list.innerHTML = "";
+  const today = new Date().toISOString().slice(0, 10);
+  const shown = allTasks.filter(t => filter === "All" || t.status === filter);
+  $("count").textContent = `${allTasks.filter(t => t.status === "Pending").length} pending, ${allTasks.filter(t => t.status === "Done").length} done`;
+  $("empty").textContent = "No tasks here yet. Write a note above to add one.";
+  $("empty").hidden = shown.length > 0;
+
+  shown.forEach(t => {
+    const li = document.createElement("li");
+    li.className = "task" + (t.status === "Done" ? " done" : "") + (t.id === freshId ? " fresh" : "");
+
+    const left = document.createElement("div");
+    const title = document.createElement("div"); title.className = "t-title"; title.textContent = t.title;
+    const meta = document.createElement("div"); meta.className = "meta";
+    const addPill = (txt, cls) => { const s = document.createElement("span"); s.className = "pill " + (cls || ""); s.textContent = txt; meta.appendChild(s); };
+    addPill(t.priority, t.priority);
+    addPill(t.category);
+    addPill("Due " + t.due_date, t.status === "Pending" && t.due_date < today ? "overdue" : "");
+    if (t.description) { const d = document.createElement("span"); d.textContent = t.description; meta.appendChild(d); }
+    left.append(title, meta);
+
+    const act = document.createElement("div"); act.className = "actions";
+    const toggle = document.createElement("button");
+    toggle.textContent = t.status === "Done" ? "Reopen" : "Mark done";
+    toggle.onclick = async () => {
+      try { await api("/tasks/" + t.id, { method: "PATCH", body: JSON.stringify({ status: t.status === "Done" ? "Pending" : "Done" }) }); freshId = t.id; loadTasks(); }
+      catch (e) { alert(e.message); }
+    };
+    const del = document.createElement("button"); del.className = "del"; del.textContent = "Delete";
+    del.setAttribute("aria-label", `Delete task ${t.title}`);
+    del.onclick = async () => {
+      if (!confirm("Delete this task?")) return;
+      try { await api("/tasks/" + t.id, { method: "DELETE" }); loadTasks(); } catch (e) { alert(e.message); }
+    };
+    act.append(toggle, del);
+    li.append(left, act); list.appendChild(li);
+  });
+}
+
+document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
+  filter = b.dataset.f;
+  document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  render();
+});
+
+/* ---------- Examples + voice input (optional extra) ---------- */
+document.querySelectorAll(".chip").forEach(c => c.onclick = () => { $("note").value = c.dataset.ex; });
+
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (!SR) { $("micBtn").hidden = true; }
+else {
+  $("micBtn").onclick = () => {
+    const rec = new SR(); rec.lang = "en-IN"; rec.interimResults = false;
+    setStatus("Listening…");
+    rec.onresult = e => { $("note").value = e.results[0][0].transcript; setStatus("Heard you. Press Create task from note."); };
+    rec.onerror = () => setStatus("Could not hear you. Try again or type.");
+    rec.start();
+  };
+}
+
+loadTasks();
+</script>
+</body>
+</html>
